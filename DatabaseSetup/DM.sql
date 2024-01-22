@@ -15,17 +15,6 @@ CREATE SCHEMA IF NOT EXISTS `LittleLemonDB` DEFAULT CHARACTER SET utf8 ;
 USE `LittleLemonDB` ;
 
 -- -----------------------------------------------------
--- Table `LittleLemonDB`.`Booking`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Booking` (
-  `BookingID` INT NOT NULL,
-  `Date` DATETIME NOT NULL,
-  `TableNumber` INT NOT NULL,
-  PRIMARY KEY (`BookingID`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `LittleLemonDB`.`Customer`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Customer` (
@@ -38,15 +27,30 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `LittleLemonDB`.`Booking`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Booking` (
+  `BookingID` INT NOT NULL,
+  `Date` DATETIME NOT NULL,
+  `TableNumber` INT NOT NULL,
+  `CustomerID` INT NOT NULL,
+  PRIMARY KEY (`BookingID`),
+  INDEX `CustomerID_idx` (`CustomerID` ASC) VISIBLE,
+  CONSTRAINT `CustomerID`
+    FOREIGN KEY (`CustomerID`)
+    REFERENCES `LittleLemonDB`.`Customer` (`CustomerID`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `LittleLemonDB`.`Menu`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Menu` (
   `MenuID` INT NOT NULL,
-  `CourseName` VARCHAR(45) NOT NULL,
-  `CuisineName` VARCHAR(255) NOT NULL,
-  `StarterName` VARCHAR(45) NOT NULL,
-  `DesertName` VARCHAR(45) NOT NULL,
-  `Drink` VARCHAR(45) NOT NULL,
+  `Name` VARCHAR(45) NULL,
+  `Description` VARCHAR(255) NULL,
   PRIMARY KEY (`MenuID`))
 ENGINE = InnoDB;
 
