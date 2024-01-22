@@ -1,0 +1,8 @@
+DELIMITER //
+
+CREATE PROCEDURE CancelOrder(IN orderId INT)
+BEGIN
+    DELETE FROM Orders WHERE OrderID = orderId;
+END //
+
+DELIMITER ;
