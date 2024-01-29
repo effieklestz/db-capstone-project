@@ -1,16 +1,21 @@
 # Meta Database Engineering Project
 
-Meta Database Engineering Capstone Project. Objectives:
+Meta Database Engineering Capstone Project.
 
-Set up a database project,
+Technologies & Tools
+![Static Badge](https://img.shields.io/badge/SQL-blue) ![Static Badge](https://img.shields.io/badge/SQL-blue) ![Static Badge](https://img.shields.io/badge/SQL-blue) ![Static Badge](https://img.shields.io/badge/SQL-blue)
 
-Add sales reports,
+Objectives:
 
-Create a table booking system,
+\*Set up a database project,
 
-Work with data analytics and visualization,
+\*Add sales reports
 
-And create a database client.
+\*Create a table booking system
+
+\*Work with data analytics and visualization
+
+\*Create a database client.
 
 ## Getting Started Notes:
 
