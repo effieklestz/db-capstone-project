@@ -4,17 +4,17 @@ Meta Database Engineering Capstone Project.
 
 Technologies & Tools
 
-![Static Badge](https://img.shields.io/badge/code-sql-blue) ![Static Badge](https://img.shields.io/badge/code-python-blue) ![Static Badge](https://img.shields.io/badge/tool-mysql-blue) ![Static Badge](https://img.shields.io/badge/tool-tableau-blue)
+![Static Badge](https://img.shields.io/badge/code-sql-blue) ![Static Badge](https://img.shields.io/badge/code-python-blue) ![Static Badge](https://img.shields.io/badge/tool-mysql-blue) ![Static Badge](https://img.shields.io/badge/tool-MySQLWorkbench-blue) ![Static Badge](https://img.shields.io/badge/tool-tableau-blue)
 
 Objectives:
 
-\*Set up a database project,
+\*Set up a database project
 
-\*Add sales reports
+\*Add sales reports.
 
-\*Create a table booking system
+\*Create a table booking system.
 
-\*Work with data analytics and visualization
+\*Work with data analytics and visualization.
 
 \*Create a database client.
 
