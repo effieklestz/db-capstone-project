@@ -17,36 +17,33 @@ And create a database client.
 1. Database Setup :
 
 ```sql
--- MySQL Workbench Forward Engineering
-
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+```
 
--- -----------------------------------------------------
--- Schema LittleLemonDB
--- -----------------------------------------------------
+2. Schema LittleLemonDB:
 
--- -----------------------------------------------------
--- Schema LittleLemonDB
--- -----------------------------------------------------
+```sql
 CREATE SCHEMA IF NOT EXISTS `LittleLemonDB` DEFAULT CHARACTER SET utf8 ;
 USE `LittleLemonDB` ;
 
--- -----------------------------------------------------
--- Table `LittleLemonDB`.`Booking`
--- -----------------------------------------------------
+```
+
+3. Table `LittleLemonDB`.`Booking`:
+
+```sql
 CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Booking` (
   `BookingID` INT NOT NULL,
   `Date` DATETIME NOT NULL,
   `TableNumber` INT NOT NULL,
   PRIMARY KEY (`BookingID`))
 ENGINE = InnoDB;
+```
 
+4. Table `LittleLemonDB`.`Customer`:
 
--- -----------------------------------------------------
--- Table `LittleLemonDB`.`Customer`
--- -----------------------------------------------------
+```sql
 CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Customer` (
   `CustomerID` INT NOT NULL,
   `FullName` VARCHAR(255) NOT NULL,
@@ -54,32 +51,32 @@ CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Customer` (
   `Email` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`CustomerID`))
 ENGINE = InnoDB;
+```
 
+5. Table `LittleLemonDB`.`Menu`:
 
--- -----------------------------------------------------
--- Table `LittleLemonDB`.`Menu`
--- -----------------------------------------------------
+```sql
 CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Menu` (
   `MenuID` INT NOT NULL,
   `Name` VARCHAR(45) NULL,
   `Description` VARCHAR(255) NULL,
   PRIMARY KEY (`MenuID`))
 ENGINE = InnoDB;
+```
 
+6. Table `LittleLemonDB`.`DeliveryStatus`:
 
--- -----------------------------------------------------
--- Table `LittleLemonDB`.`DeliveryStatus`
--- -----------------------------------------------------
+```sql
 CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`DeliveryStatus` (
   `DeliveryID` INT NOT NULL,
   `DeliveryDate` DATETIME NOT NULL,
   PRIMARY KEY (`DeliveryID`))
 ENGINE = InnoDB;
+```
 
+7. Table `LittleLemonDB`.`Orders`:
 
--- -----------------------------------------------------
--- Table `LittleLemonDB`.`Orders`
--- -----------------------------------------------------
+```sql
 CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Orders` (
   `OrderID` INT NOT NULL,
   `Date` DATETIME NOT NULL,
@@ -115,11 +112,11 @@ CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Orders` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
+```
 
+8. Table `LittleLemonDB`.`Staff`:
 
--- -----------------------------------------------------
--- Table `LittleLemonDB`.`Staff`
--- -----------------------------------------------------
+```sql
 CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Staff` (
   `StaffID` INT NOT NULL,
   `FullName` VARCHAR(255) NOT NULL,
@@ -136,62 +133,101 @@ CREATE TABLE IF NOT EXISTS `LittleLemonDB`.`Staff` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-
-
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-
 ```
 
-2. tell poetry to use correct version of python:
+## Sales Reports:
+
+1. Create MenuDetailsView to view Course names with Orders > 2:
 
 ```sql
-poetry env use $(which python)
+CREATE VIEW MenuDetailsView AS
+SELECT m.CourseName
+FROM Menu m
+WHERE Menus.MenuID = ANY (
+    SELECT Orders.MenuID
+    FROM Orders
+    GROUP BY Orders.MenuID
+    HAVING COUNT(*) > 2
+);
 ```
 
-3. install dependecies:
+2. Create OrderDetailsView to view Orders with Costs > $150 :
 
 ```sql
-poetry install
+CREATE VIEW OrderDetailsView AS
+SELECT c.CustomerID, c.FullName, o.OrderID, o.TotalCost, m.CourseName, m.StarterName
+FROM orders o
+INNER JOIN customer c ON o.customerid = c.costumerid
+INNER JOIN menu m ON o.meduID = m.meduID
+WHERE o.TotalCost > 150
+ORDER BY o.TotalCost DESC;
 ```
 
-4. add dependency:
+3. Create OrdersView to view orders with Quantity > 2 :
 
 ```sql
-poetry add pandas
+CREATE VIEW OrdersView AS
+SELECT orders.OrderID, orders.Quantity, orders.TotalCost
+FROM orders
+WHERE orders.Quantity > 2;
 ```
 
-5. done
+## Booking System:
 
-## Jupyter Setup:
-
-1. ensure you have `ipykernel` as dependeny
-2. instantiate kernel:
+1. Create CheckBooking Procedure to check whether a table in the restaurant is already booked:
 
 ```sql
-poetry run python -m ipykernel --user --name NAME_OF_YOUR_KERNEL
+CREATE PROCEDURE 'CheckBooking'(booking_date DATE, table_number INT)
+BEGIN
+DECLARE bookingTable INT DEFAULT 0;
+ SELECT COUNT(bookingTable)
+    INTO bookingTable
+    FROM Bookings WHERE BookingDate = booking_date and TableNumber = table_number;
+    IF bookingTable > 0 THEN
+      SELECT CONCAT( "Table", table_number, "is already booked") AS "Booking status";
+      ELSE
+      SELECT CONCAT( "Table", table_number, "is not booked") AS "Booking status";
+    END IF;
+END;
 ```
 
-3. launch jupyter notebook
-4. select kernel create in step 2
-
-## Running Helpful commands:
-
-1. install updates (equal to `pip upgrade`):
+1. Create CheckBooking Procedure to verify a booking, and decline any reservations for tables that are already booked under another name:
 
 ```sql
-poetry update
+DELIMITER //
+CREATE PROCEDURE AddValidBooking(
+    IN bookingDate DATE,
+    IN tableNumber INT,
+    IN customerName VARCHAR(255)
+)
+BEGIN
+    DECLARE @existingBookingCount INT;
+    -- Check if the table is already booked
+    SELECT COUNT(*) INTO @existingBookingCount
+    FROM Bookings
+    WHERE BookingDate = bookingDate AND TableNumber = tableNumber;
+      -- Start a transaction
+    START TRANSACTION;
+    IF @existingBookingCount > 0 THEN
+        -- Rollback transaction
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Table is already booked for this date.';
+    ELSE
+        -- Insert new booking
+        INSERT INTO Bookings (BookingDate, TableNumber, CustomerName)
+        VALUES (bookingDate, tableNumber, customerName);
+        -- Commit the transaction
+        COMMIT;
+    END IF;
+END //
+DELIMITER ;
 ```
 
-2. run tests:
+## Tableau Analytics:
 
-```sql
-poetry run pytest
-```
-
-2. open shell in poetry's virtual env:
-
-```sql
-poetry shell
-```
+1. Dashboard in Tableau with Little Lemon's Sales and Profits:
+   ![Alt text](<Tableau Analytics/Little Lemon Dashboard.png>)
