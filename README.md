@@ -3,7 +3,8 @@
 Meta Database Engineering Capstone Project.
 
 Technologies & Tools
-![Static Badge](https://img.shields.io/badge/SQL-blue) ![Static Badge](https://img.shields.io/badge/SQL-blue) ![Static Badge](https://img.shields.io/badge/SQL-blue) ![Static Badge](https://img.shields.io/badge/SQL-blue)
+
+![Static Badge](https://img.shields.io/badge/code-sql-blue) ![Static Badge](https://img.shields.io/badge/code-python-blue) ![Static Badge](https://img.shields.io/badge/tool-mysql-blue) ![Static Badge](https://img.shields.io/badge/tool-tableau-blue)
 
 Objectives:
 
